@@ -22,7 +22,7 @@ func main() {
 
 	config.ConnectDB()
 
-	err = config.DB.Migrator().DropTable(&models.Video{}, &models.Channel{}, &models.User{})
+	err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{})
 	if err != nil {
 		panic("Failed to drop tables!")
 	}
@@ -39,9 +39,19 @@ func main() {
 		panic("User migration error: " + err.Error())
 	}
 
+	err = config.DB.AutoMigrate(&models.RefreshToken{})
+	if err != nil {
+		panic("RefreshToken migration error: " + err.Error())
+	}
+
 	err = config.DB.AutoMigrate(&models.Channel{})
 	if err != nil {
 		panic("Channel migration error: " + err.Error())
+	}
+
+	err = config.DB.AutoMigrate(&models.Comment{})
+	if err != nil {
+		panic("Comment migration error: " + err.Error())
 	}
 
 	err = config.DB.AutoMigrate(&models.Video{})
