@@ -1,8 +1,10 @@
 package models
 
 type User struct {
-	UserID        int64           `gorm:"primaryKey;type:bigint;autoIncrement" json:"userId"`
-	Name          string          `json:"name"`
+	UserID        int64           `gorm:"primaryKey;autoIncrement" json:"userId"`
+	FirstName     string          `json:"firstName"`
+	LastName      string          `json:"lastName"`
+	UserName      string          `json:"userName"`
 	Age           int             `json:"age"`
 	Email         string          `gorm:"unique" json:"email"`
 	Password      string          `json:"password"`

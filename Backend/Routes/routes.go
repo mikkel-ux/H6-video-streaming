@@ -1,13 +1,15 @@
 package routes
 
 import (
+	handlers "VideoStreamingBackend/Handlers"
+
 	scalargo "github.com/bdpiprava/scalar-go"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(r *gin.Engine) {
 	r.GET("/api.yaml", func(c *gin.Context) {
-		c.File("./api/api.yaml")
+		c.File("./ApiDoc/api.yaml")
 	})
 
 	r.GET("/docs", func(c *gin.Context) {
@@ -20,4 +22,7 @@ func SetupRoutes(r *gin.Engine) {
 		}
 		c.Data(200, "text/html; charset=utf-8", []byte(html))
 	})
+
+	r.POST("/users", handlers.CreateUserHandler)
+	r.POST("/login", handlers.LoginUserHandler)
 }

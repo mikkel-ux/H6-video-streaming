@@ -11,10 +11,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-/* type User struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-} */
+/*
+	 type User struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}
+*/
+var testing = false
 
 func main() {
 	r := gin.Default()
@@ -25,41 +28,38 @@ func main() {
 
 	config.ConnectDB()
 
-	err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{})
-	if err != nil {
-		panic("Failed to drop tables!")
-	}
+	if testing {
+		err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{})
+		if err != nil {
+			panic("Failed to drop tables!")
+		}
 
-	/* err = config.DB.AutoMigrate(&models.User{}, &models.Channel{}, &models.Video{})
-	if err != nil {
-		panic("Failed to migrate tables!")
-	} */
+		time.Sleep(100 * time.Millisecond)
 
-	time.Sleep(100 * time.Millisecond)
+		err = config.DB.AutoMigrate(&models.User{})
+		if err != nil {
+			panic("User migration error: " + err.Error())
+		}
 
-	err = config.DB.AutoMigrate(&models.User{})
-	if err != nil {
-		panic("User migration error: " + err.Error())
-	}
+		err = config.DB.AutoMigrate(&models.RefreshToken{})
+		if err != nil {
+			panic("RefreshToken migration error: " + err.Error())
+		}
 
-	err = config.DB.AutoMigrate(&models.RefreshToken{})
-	if err != nil {
-		panic("RefreshToken migration error: " + err.Error())
-	}
+		err = config.DB.AutoMigrate(&models.Channel{})
+		if err != nil {
+			panic("Channel migration error: " + err.Error())
+		}
 
-	err = config.DB.AutoMigrate(&models.Channel{})
-	if err != nil {
-		panic("Channel migration error: " + err.Error())
-	}
+		err = config.DB.AutoMigrate(&models.Comment{})
+		if err != nil {
+			panic("Comment migration error: " + err.Error())
+		}
 
-	err = config.DB.AutoMigrate(&models.Comment{})
-	if err != nil {
-		panic("Comment migration error: " + err.Error())
-	}
-
-	err = config.DB.AutoMigrate(&models.Video{})
-	if err != nil {
-		panic("Video migration error: " + err.Error())
+		err = config.DB.AutoMigrate(&models.Video{})
+		if err != nil {
+			panic("Video migration error: " + err.Error())
+		}
 	}
 
 	routes.SetupRoutes(r)
