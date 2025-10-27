@@ -3,8 +3,11 @@ package main
 import (
 	config "VideoStreamingBackend/Config"
 	models "VideoStreamingBackend/Models"
+	routes "VideoStreamingBackend/Routes"
+	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -14,7 +17,7 @@ import (
 } */
 
 func main() {
-	/* r := gin.Default() */
+	r := gin.Default()
 	err := godotenv.Load()
 	if err != nil {
 		panic("Error loading .env file")
@@ -59,5 +62,7 @@ func main() {
 		panic("Video migration error: " + err.Error())
 	}
 
-	/* r.Run(":" + os.Getenv("PORT")) */
+	routes.SetupRoutes(r)
+
+	r.Run(":" + os.Getenv("PORT"))
 }
