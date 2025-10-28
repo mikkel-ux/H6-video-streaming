@@ -90,6 +90,32 @@ paths:
                   password:
                     type: string
   /users/{userId}:
+    get:
+      summary: Get a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                  email:
+                    type: string
+                  userName:
+                    type: string
+                  age:
+                    type: integer
+        "404":
+          description: User not found
     put:
       summary: Update a user
       parameters:

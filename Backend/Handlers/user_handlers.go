@@ -48,7 +48,7 @@ func CreateUserHandler(g *gin.Context) {
 }
 
 type GetUserResponse struct {
-	UserID   uint   `json:"userId"`
+	UserID   int64  `json:"userId"`
 	Email    string `json:"email"`
 	UserName string `json:"userName"`
 	Age      int    `json:"age"`
@@ -57,12 +57,17 @@ type GetUserResponse struct {
 func GetUserHandler(g *gin.Context) {
 	userId := g.Param("userId")
 	var user models.User
-	if err := config.DB.First(&GetUserResponse{}, userId).Error; err != nil {
+	if err := config.DB.First(&user, userId).Error; err != nil {
 		g.JSON(404, gin.H{"error": "User not found"})
 		return
 	}
 
-	g.JSON(200, user)
+	g.JSON(200, GetUserResponse{
+		UserID:   user.UserID,
+		Email:    user.Email,
+		UserName: user.UserName,
+		Age:      user.Age,
+	})
 }
 
 func DeleteUserHandler(g *gin.Context) {
