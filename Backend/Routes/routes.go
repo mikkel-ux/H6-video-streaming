@@ -25,4 +25,8 @@ func SetupRoutes(r *gin.Engine) {
 
 	r.POST("/users", handlers.CreateUserHandler)
 	r.POST("/login", handlers.LoginUserHandler)
+	r.GET("/users/:userId", handlers.GetUserHandler)
+	r.DELETE("/users/:userId", handlers.DeleteUserHandler)
+	r.PATCH("/users/:userId", handlers.UpdatePasswordHandler)
+	r.PUT("/users/:userId", handlers.UpdateUserHandler)
 }
