@@ -89,3 +89,82 @@ paths:
                     type: string
                   password:
                     type: string
+  /users/{userId}:
+    put:
+      summary: Update a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                userName:
+                  type: string
+                age:
+                  type: integer
+                email:
+                  type: string
+      responses:
+        "200":
+          description: User updated successfully
+        "400":
+          description: Invalid request
+        "404":
+          description: User not found
+    patch:
+      summary: Update user password
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+              required:
+                - oldPassword
+                - newPassword
+      responses:
+        "200":
+          description: Password updated successfully
+        "400":
+          description: Invalid request
+        "401":
+          description: Old password is incorrect
+        "404":
+          description: User not found
+        "500":
+          description: Failed to hash new password
+    delete:
+      summary: Delete a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User deleted successfully
+        "404":
+          description: User not found
