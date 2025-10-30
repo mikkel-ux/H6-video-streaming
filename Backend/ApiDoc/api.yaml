@@ -89,6 +89,31 @@ paths:
                     type: string
                   password:
                     type: string
+  /logout:
+    post:
+      summary: User logout
+      description: Revokes the refresh token and clears authentication cookies.
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        "500":
+          description: Failed to revoke refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to revoke refresh token"
   /users/{userId}:
     get:
       summary: Get a user
