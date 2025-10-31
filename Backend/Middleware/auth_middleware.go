@@ -30,7 +30,7 @@ func RefreshAccessToken(refreshTokenString string) (string, error) {
 	}
 
 	result := config.DB.Model(&models.RefreshToken{}).
-		Where("token = ? AND revoked = false AND expires_at > ?", refreshTokenString, time.Now()).
+		Where("token = ? AND revoked = 0 AND expires_at > ? AND user_id = ?", refreshTokenString, time.Now(), claims.UserID).
 		First(&models.RefreshToken{})
 	if result.Error != nil {
 		return "", result.Error
@@ -43,12 +43,15 @@ func RefreshAccessToken(refreshTokenString string) (string, error) {
 
 }
 
+/* TODO: test if we can get refresh token from cookie */
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			refreshToken, err := c.Cookie("refresh_token")
+			println("refresh token from cookie:", refreshToken)
 			if err != nil {
+				println("Failed to get refresh token from cookie:", err)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No authentication provided"})
 				return
 			}
@@ -61,6 +64,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 			c.Header("Authorization", "Bearer "+newAccessToken)
 			authHeader = "Bearer " + newAccessToken
+			c.SetCookie("token", newAccessToken, 3600*24, "/", "localhost", false, true)
 		}
 		var accessToken string
 		if strings.HasPrefix(authHeader, "Bearer ") {
@@ -69,7 +73,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
 			return
 		}
-		println(accessToken) //TODO remove debug print
+
+		claims := &Claims{}
+		token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+		})
+		if err != nil || !token.Valid {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired access token"})
+			return
+		}
 
 		c.Next()
 	}

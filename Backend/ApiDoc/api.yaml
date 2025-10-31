@@ -9,7 +9,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
 paths:
-  /users:
+  /api/users:
     post:
       summary: Create a new user
       requestBody:
@@ -60,7 +60,7 @@ paths:
                         type: string
         "400":
           description: Invalid request
-  /login:
+  /api/login:
     post:
       summary: User login
       requestBody:
@@ -89,7 +89,7 @@ paths:
                     type: string
                   password:
                     type: string
-  /logout:
+  /api/logout:
     post:
       summary: User logout
       description: Revokes the refresh token and clears authentication cookies.
@@ -114,7 +114,7 @@ paths:
                   error:
                     type: string
                     example: "Failed to revoke refresh token"
-  /users/{userId}:
+  /api/users/{userId}:
     get:
       summary: Get a user
       parameters:

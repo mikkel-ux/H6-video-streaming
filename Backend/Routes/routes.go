@@ -2,6 +2,7 @@ package routes
 
 import (
 	handlers "VideoStreamingBackend/Handlers"
+	mi "VideoStreamingBackend/Middleware"
 
 	scalargo "github.com/bdpiprava/scalar-go"
 	"github.com/gin-gonic/gin"
@@ -23,11 +24,19 @@ func SetupRoutes(r *gin.Engine) {
 		c.Data(200, "text/html; charset=utf-8", []byte(html))
 	})
 
-	r.POST("/users", handlers.CreateUserHandler)
-	r.POST("/login", handlers.LoginHandler)
-	r.POST("/logout", handlers.LogoutHandler)
-	r.GET("/users/:userId", handlers.GetUserHandler)
-	r.DELETE("/users/:userId", handlers.DeleteUserHandler)
-	r.PATCH("/users/:userId", handlers.UpdatePasswordHandler)
-	r.PUT("/users/:userId", handlers.UpdateUserHandler)
+	api := r.Group("/api")
+
+	api.POST("/users", handlers.CreateUserHandler)
+	api.POST("/login", handlers.LoginHandler)
+
+	protected := api.Group("")
+	protected.Use(mi.AuthMiddleware())
+	{
+		protected.PUT("/users/:userId", handlers.UpdateUserHandler)
+		protected.PATCH("/users/:userId", handlers.UpdatePasswordHandler)
+		protected.DELETE("/users/:userId", handlers.DeleteUserHandler)
+		protected.GET("/users/:userId", handlers.GetUserHandler)
+		protected.POST("/logout", handlers.LogoutHandler)
+
+	}
 }
