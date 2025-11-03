@@ -219,3 +219,32 @@ paths:
           description: User deleted successfully
         "404":
           description: User not found
+  /api/videos:
+    post:
+      summary: Upload a video
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                videoFile:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Video uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Failed to retrieve file
+        "401":
+          description: User not authenticated
+        "500":
+          description: Failed to save file

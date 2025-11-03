@@ -37,6 +37,7 @@ func SetupRoutes(r *gin.Engine) {
 		protected.DELETE("/users/:userId", handlers.DeleteUserHandler)
 		protected.GET("/users/:userId", handlers.GetUserHandler)
 		protected.POST("/logout", handlers.LogoutHandler)
+		protected.POST("/videos", handlers.UploadVideoHandler)
 
 	}
 }
