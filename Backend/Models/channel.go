@@ -1,7 +1,7 @@
 package models
 
 type Channel struct {
-	ChannelID   int64   `gorm:"primaryKey;type:bigint;autoIncrement" json:"channelId"`
+	ChannelID   int64   `gorm:"primaryKey;autoIncrement" json:"channelId"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	UserID      int64   `gorm:"uniqueIndex" json:"userId"`

@@ -12,4 +12,5 @@ type User struct {
 	RefreshTokens []*RefreshToken `json:"refreshTokens"`
 	VideoHistory  []*Video        `gorm:"many2many:user_video_history;" json:"videoHistory"`
 	WatchLater    []*Video        `gorm:"many2many:user_watch_later;" json:"watchLater"`
+	LikedVideos   []*Video        `gorm:"many2many:user_liked_videos;" json:"likedVideos"`
 }

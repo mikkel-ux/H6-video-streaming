@@ -17,7 +17,7 @@ import (
 		Age  int    `json:"age"`
 	}
 */
-var testing = false
+var migrate = false
 
 func main() {
 	r := gin.Default()
@@ -28,7 +28,7 @@ func main() {
 
 	config.ConnectDB()
 
-	if testing {
+	if migrate {
 		err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{})
 		if err != nil {
 			panic("Failed to drop tables!")

@@ -4,17 +4,26 @@
 package handlers
 
 import (
+	config "VideoStreamingBackend/Config"
+	models "VideoStreamingBackend/Models"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/h2non/filetype"
 )
 
+type UploadVideoRequest struct {
+	Name        string `form:"name" binding:"required"`
+	Description string `form:"description" binding:"required"`
+}
+
 // TODO implement video processing (e.g., change metadata so it's suitable for streaming, thumbnail generation)
-func handleVideoProcessing(tempPath string) error {
+func handleVideoProcessing(tempPath string, videoDetails UploadVideoRequest) error {
 	println("Processing video:", tempPath)
 	thumbnailPath := strings.Replace(tempPath, "TempVideoPath", "Images", 1)
 	uploadPath := strings.Replace(tempPath, "TempVideoPath", "Videos", 1)
@@ -42,14 +51,52 @@ func handleVideoProcessing(tempPath string) error {
 		return fmt.Errorf("error moving file to uploads: %v", err)
 	}
 	os.Remove(tempPath)
+
+	if err := config.DB.Create(&models.Video{
+		Title:       videoDetails.Name,
+		Description: videoDetails.Description,
+		URL:         uploadPath,
+		Thumbnail:   thumbnailPath,
+		Uploaded:    time.Now(),
+	}).Error; err != nil {
+		return fmt.Errorf("error saving video to database: %v", err)
+	}
 	return nil
 }
 
 func UploadVideoHandler(c *gin.Context) {
-	println("something")
+	var request UploadVideoRequest
+
+	if err := c.ShouldBind(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind request"})
+		return
+	}
+
+	println("request name: ", request.Name)
+	println("request description: ", request.Description)
+
 	file, err := c.FormFile("videoFile")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to retrieve file"})
+		return
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		return
+	}
+	defer src.Close()
+
+	buffer := make([]byte, 512)
+	_, err = src.Read(buffer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+
+	if !filetype.IsVideo(buffer) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Uploaded file is not a valid video"})
 		return
 	}
 
@@ -71,10 +118,45 @@ func UploadVideoHandler(c *gin.Context) {
 	}
 
 	go func() {
-		if err := handleVideoProcessing(filename); err != nil {
+		if err := handleVideoProcessing(filename, request); err != nil {
 			fmt.Println("Video processing failed for", filename, ":", err)
 		}
 	}()
 
 	c.JSON(http.StatusOK, gin.H{"message": "Video uploaded successfully"})
+}
+
+func LikeVideoHandler(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized - User ID not found"})
+		return
+	}
+
+	videoID := c.Param("videoId")
+
+	var video models.Video
+	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+	video.Likes += 1
+	if err := config.DB.Save(&video).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
+		return
+	}
+
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	/* user.LikedVideos = append(user.LikedVideos, video)
+	if err := config.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user liked videos"})
+		return
+	} */
+
+	c.JSON(http.StatusOK, gin.H{"message": "Video liked successfully", "likes": video.Likes})
 }

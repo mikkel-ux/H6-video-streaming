@@ -1,7 +1,7 @@
 package models
 
 type Comment struct {
-	CommentID int64      `gorm:"primaryKey;type:bigint;autoIncrement" json:"commentId"`
+	CommentID int64      `gorm:"primaryKey;autoIncrement" json:"commentId"`
 	Content   string     `json:"content"`
 	UserID    int64      `json:"userId"`
 	VideoID   int64      `json:"videoId"`
