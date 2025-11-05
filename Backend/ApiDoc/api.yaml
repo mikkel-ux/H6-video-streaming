@@ -27,6 +27,8 @@ paths:
                   type: string
                 email:
                   type: string
+                age:
+                  type: integer
                 password:
                   type: string
               required:
@@ -34,6 +36,7 @@ paths:
                 - lastName
                 - userName
                 - email
+                - age
                 - password
       responses:
         "200":
@@ -54,12 +57,15 @@ paths:
                         type: string
                       email:
                         type: string
+                      age:
+                        type: integer
                       userName:
                         type: string
                       password:
                         type: string
         "400":
           description: Invalid request
+
   /api/login:
     post:
       summary: User login
@@ -89,6 +95,7 @@ paths:
                     type: string
                   password:
                     type: string
+
   /api/logout:
     post:
       summary: User logout
@@ -114,6 +121,7 @@ paths:
                   error:
                     type: string
                     example: "Failed to revoke refresh token"
+
   /api/users/{userId}:
     get:
       summary: Get a user
@@ -219,6 +227,7 @@ paths:
           description: User deleted successfully
         "404":
           description: User not found
+
   /api/videos:
     post:
       summary: Upload a video
@@ -256,3 +265,35 @@ paths:
           description: User not authenticated
         "500":
           description: Failed to save file
+
+  /api/videos/{videoId}/like:
+    post:
+      summary: Like a video
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video liked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  likes:
+                    type: integer
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized access
+        "404":
+          description: Video or user not found
+        "500":
+          description: Failed to update like or link to user

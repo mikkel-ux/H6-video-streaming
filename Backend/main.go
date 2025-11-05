@@ -29,7 +29,7 @@ func main() {
 	config.ConnectDB()
 
 	if migrate {
-		err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{})
+		err = config.DB.Migrator().DropTable(&models.RefreshToken{}, &models.Comment{}, &models.Video{}, &models.Channel{}, &models.User{}, "user_liked_videos", "user_disliked_videos")
 		if err != nil {
 			panic("Failed to drop tables!")
 		}

@@ -8,64 +8,16 @@ import (
 	models "VideoStreamingBackend/Models"
 	"fmt"
 	"net/http"
-	"os"
-	"os/exec"
-	"strings"
-	"time"
+
+	DTO "VideoStreamingBackend/Models/DTO"
+	utils "VideoStreamingBackend/Utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/h2non/filetype"
 )
 
-type UploadVideoRequest struct {
-	Name        string `form:"name" binding:"required"`
-	Description string `form:"description" binding:"required"`
-}
-
-// TODO implement video processing (e.g., change metadata so it's suitable for streaming, thumbnail generation)
-func handleVideoProcessing(tempPath string, videoDetails UploadVideoRequest) error {
-	println("Processing video:", tempPath)
-	thumbnailPath := strings.Replace(tempPath, "TempVideoPath", "Images", 1)
-	uploadPath := strings.Replace(tempPath, "TempVideoPath", "Videos", 1)
-
-	lastDot := strings.LastIndex(thumbnailPath, ".")
-	if lastDot != -1 {
-		thumbnailPath = thumbnailPath[:lastDot] + "___thumbnail.jpg"
-		println(thumbnailPath)
-	} else {
-		thumbnailPath = thumbnailPath + "___thumbnail.jpg"
-	}
-	/* command er fra en på stackExchange men jeg har selv sat den op så go kan køre den */
-	cmd := exec.Command("ffmpeg", "-i", tempPath, "-vf", "scale=iw*sar:ih,setsar=1", "-vframes", "1", thumbnailPath)
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error processing video:", err)
-		return err
-	}
-
-	cmd = exec.Command("ffmpeg", "-i", tempPath,
-		"-c:v", "copy", "-c:a", "copy", "-movflags", "+faststart",
-		uploadPath)
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("error moving file to uploads: %v", err)
-	}
-	os.Remove(tempPath)
-
-	if err := config.DB.Create(&models.Video{
-		Title:       videoDetails.Name,
-		Description: videoDetails.Description,
-		URL:         uploadPath,
-		Thumbnail:   thumbnailPath,
-		Uploaded:    time.Now(),
-	}).Error; err != nil {
-		return fmt.Errorf("error saving video to database: %v", err)
-	}
-	return nil
-}
-
 func UploadVideoHandler(c *gin.Context) {
-	var request UploadVideoRequest
+	var request DTO.UploadVideoRequest
 
 	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind request"})
@@ -118,7 +70,7 @@ func UploadVideoHandler(c *gin.Context) {
 	}
 
 	go func() {
-		if err := handleVideoProcessing(filename, request); err != nil {
+		if err := utils.HandleVideoProcessing(filename, request); err != nil {
 			fmt.Println("Video processing failed for", filename, ":", err)
 		}
 	}()
@@ -140,23 +92,58 @@ func LikeVideoHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 		return
 	}
+	action := "liked"
+
+	err := utils.CheckIfVideoIsLikedByUser(userID, videoID)
+	if err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Video already liked"})
+		return
+	}
+
 	video.Likes += 1
+
 	if err := config.DB.Save(&video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
 		return
 	}
 
 	var user models.User
-	if err := config.DB.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	if err := config.DB.Preload("LikedVideos").First(&user, "user_id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
 		return
 	}
 
-	/* user.LikedVideos = append(user.LikedVideos, video)
+	user.LikedVideos = append(user.LikedVideos, &video)
 	if err := config.DB.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user liked videos"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
 		return
-	} */
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Video liked successfully", "likes": video.Likes})
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Video %s successfully", action), "likes": video.Likes})
 }
+
+/*
+
+func DislikeVideoHandler(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized - User ID not found"})
+		return
+	}
+
+	videoID := c.Param("videoId")
+
+	var video models.Video
+	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+
+	if video.Likes > 0 {
+		video.Likes -= 1
+		if err := config.DB.Save(&video).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to dislike video"})
+			return
+		}
+}
+} */
