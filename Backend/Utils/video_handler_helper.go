@@ -54,32 +54,35 @@ func HandleVideoProcessing(tempPath string, videoDetails DTO.UploadVideoRequest)
 }
 
 func CheckIfVideoIsLikedByUser(userID any, videoID string) error {
-	var existingLike models.User
-	err := config.DB.Model(&models.User{}).Where("user_id = ?", userID).
-		Where("EXISTS (SELECT 1 FROM user_liked_videos WHERE user_user_id = ? AND video_video_id = ?)", userID, videoID).
-		First(&existingLike).Error
-	/* err := config.DB.Model(&models.User{UserID: userID.(int64)}).
-		Where("video_id = ?", videoID).
-		Association("LikedVideos").Find(&existingLike)
+	var count int64
+
+	err := config.DB.Table("user_liked_videos").
+		Where("user_user_id = ? AND video_video_id = ?", userID, videoID).
+		Count(&count).Error
 	if err != nil {
 		return err
 	}
 
-	if existingLike.UserID == 0 {
+	if count > 0 {
+		return nil
+	} else {
 		return fmt.Errorf("like not found")
 	}
-
-	*/
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func CheckIfVideoIsDislikedByUser(userID any, videoID string) error {
-	var existingDislike models.User
-	err := config.DB.Model(&models.User{}).Where("user_id = ?", userID).
-		Where("EXISTS (SELECT 1 FROM user_disliked_videos WHERE user_user_id = ? AND video_video_id = ?)", userID, videoID).
-		First(&existingDislike).Error
-	return err
+	var count int64
+
+	err := config.DB.Table("user_disliked_videos").
+		Where("user_user_id = ? AND video_video_id = ?", userID, videoID).
+		Count(&count).Error
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return nil
+	} else {
+		return fmt.Errorf("dislike not found")
+	}
 }

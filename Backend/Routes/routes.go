@@ -39,6 +39,6 @@ func SetupRoutes(r *gin.Engine) {
 		protected.POST("/logout", handlers.LogoutHandler)
 		protected.POST("/videos", handlers.UploadVideoHandler)
 		protected.POST("/videos/:videoId/like", handlers.LikeVideoHandler)
-
+		protected.POST("/videos/:videoId/dislike", handlers.DislikedVideosHandler)
 	}
 }

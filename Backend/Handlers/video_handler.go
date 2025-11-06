@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/h2non/filetype"
+	"gorm.io/gorm"
 )
 
 func UploadVideoHandler(c *gin.Context) {
@@ -86,45 +87,55 @@ func LikeVideoHandler(c *gin.Context) {
 	}
 
 	videoID := c.Param("videoId")
-
+	action := "liked"
 	var video models.Video
 	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 		return
 	}
-	action := "liked"
-
 	err := utils.CheckIfVideoIsLikedByUser(userID, videoID)
 	if err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Video already liked"})
-		return
+		err := config.DB.Table("user_liked_videos").
+			Where("user_user_id = ? AND video_video_id = ?", userID, videoID).
+			Delete(nil).Error
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike video"})
+			return
+		}
+
+		if video.Likes > 0 {
+			if err := config.DB.Model(&models.Video{}).
+				Where("video_id = ?", videoID).
+				UpdateColumn("likes", gorm.Expr("likes - ?", 1)).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike video"})
+				return
+			}
+		}
+		action = "unliked"
+	} else {
+		if err := config.DB.Model(&models.Video{}).
+			Where("video_id = ?", videoID).
+			UpdateColumn("likes", gorm.Expr("likes + ?", 1)).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
+			return
+		}
+		var user models.User
+		if err := config.DB.Preload("LikedVideos").First(&user, "user_id = ?", userID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+			return
+		}
+
+		user.LikedVideos = append(user.LikedVideos, &video)
+		if err := config.DB.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
+			return
+		}
 	}
 
-	video.Likes += 1
-
-	if err := config.DB.Save(&video).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
-		return
-	}
-
-	var user models.User
-	if err := config.DB.Preload("LikedVideos").First(&user, "user_id = ?", userID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
-		return
-	}
-
-	user.LikedVideos = append(user.LikedVideos, &video)
-	if err := config.DB.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Video %s successfully", action), "likes": video.Likes})
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Video %s successfully", action)})
 }
 
-/*
-
-func DislikeVideoHandler(c *gin.Context) {
+func DislikedVideosHandler(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized - User ID not found"})
@@ -132,18 +143,52 @@ func DislikeVideoHandler(c *gin.Context) {
 	}
 
 	videoID := c.Param("videoId")
-
+	action := "disliked"
 	var video models.Video
 	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 		return
 	}
+	err := utils.CheckIfVideoIsDislikedByUser(userID, videoID)
+	println("error from checkifdisliked:", err)
+	if err == nil {
+		err := config.DB.Table("user_disliked_videos").
+			Where("user_user_id = ? AND video_video_id = ?", userID, videoID).
+			Delete(nil).Error
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike video"})
+			return
+		}
 
-	if video.Likes > 0 {
-		video.Likes -= 1
-		if err := config.DB.Save(&video).Error; err != nil {
+		if video.Dislikes > 0 {
+			if err := config.DB.Model(&models.Video{}).
+				Where("video_id = ?", videoID).
+				UpdateColumn("dislikes", gorm.Expr("dislikes - ?", 1)).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to undislike video"})
+				return
+			}
+		}
+		action = "undisliked"
+	} else {
+		if err := config.DB.Model(&models.Video{}).
+			Where("video_id = ?", videoID).
+			UpdateColumn("dislikes", gorm.Expr("dislikes + ?", 1)).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to dislike video"})
 			return
 		}
+		var user models.User
+		if err := config.DB.Preload("DislikedVideos").First(&user, "user_id = ?", userID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
+			return
+		}
+
+		user.DislikedVideos = append(user.DislikedVideos, &video)
+		if err := config.DB.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Video %s successfully", action)})
+
 }
-} */

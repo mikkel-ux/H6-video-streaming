@@ -297,3 +297,35 @@ paths:
           description: Video or user not found
         "500":
           description: Failed to update like or link to user
+
+  /api/videos/{videoId}/dislike:
+    post:
+      summary: Dislike a video
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video disliked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  dislikes:
+                    type: integer
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized access
+        "404":
+          description: Video or user not found
+        "500":
+          description: Failed to update dislike or link to user
