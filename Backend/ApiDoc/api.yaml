@@ -266,6 +266,48 @@ paths:
         "500":
           description: Failed to save file
 
+  /api/videos/{videoId}:
+    get:
+      summary: Get video by ID
+      description: Retrieve detailed information about a specific video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videoId:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  uploaded:
+                    type: string
+                    format: date-time
+                  url:
+                    type: string
+                    format: uri
+                  thumbnail:
+                    type: string
+                    format: uri
+                  likes:
+                    type: integer
+                  dislikes:
+                    type: integer
+                  channel:
+                    type: string
+        "404":
+          description: Video not found
+
   /api/videos/{videoId}/like:
     post:
       summary: Like a video

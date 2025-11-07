@@ -192,3 +192,37 @@ func DislikedVideosHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Video %s successfully", action)})
 
 }
+
+func GetVideoHandler(c *gin.Context) {
+	videoID := c.Param("videoId")
+	var video models.Video
+	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+
+	videoResponse := DTO.GetVideoResponse{
+		VideoID:     video.VideoID,
+		Title:       video.Title,
+		Description: video.Description,
+		Uploaded:    video.Uploaded,
+		URL:         video.URL,
+		Thumbnail:   video.Thumbnail,
+		Likes:       video.Likes,
+		Dislikes:    video.Dislikes,
+		Channel:     video.Channel,
+	}
+
+	c.JSON(http.StatusOK, videoResponse)
+}
+
+func VideoStreamHandler(c *gin.Context) {
+	videoID := c.Param("videoId")
+	var video models.Video
+	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+
+	http.ServeFile(c.Writer, c.Request, video.URL)
+}

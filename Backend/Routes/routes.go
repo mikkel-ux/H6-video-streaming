@@ -38,6 +38,7 @@ func SetupRoutes(r *gin.Engine) {
 		protected.GET("/users/:userId", handlers.GetUserHandler)
 		protected.POST("/logout", handlers.LogoutHandler)
 		protected.POST("/videos", handlers.UploadVideoHandler)
+		protected.GET("/videos/:videoId", handlers.GetVideoHandler)
 		protected.POST("/videos/:videoId/like", handlers.LikeVideoHandler)
 		protected.POST("/videos/:videoId/dislike", handlers.DislikedVideosHandler)
 	}
