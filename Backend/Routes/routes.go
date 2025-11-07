@@ -41,5 +41,6 @@ func SetupRoutes(r *gin.Engine) {
 		protected.GET("/videos/:videoId", handlers.GetVideoHandler)
 		protected.POST("/videos/:videoId/like", handlers.LikeVideoHandler)
 		protected.POST("/videos/:videoId/dislike", handlers.DislikedVideosHandler)
+		protected.GET("/channels/:channelId", handlers.GetChannelHandler)
 	}
 }

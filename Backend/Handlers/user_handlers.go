@@ -3,22 +3,15 @@ package handlers
 import (
 	config "VideoStreamingBackend/Config"
 	models "VideoStreamingBackend/Models"
+	DTO "VideoStreamingBackend/Models/DTO"
 	utils "VideoStreamingBackend/Utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type CreateUserRequest struct {
-	FirstName string `json:"firstName" binding:"required"`
-	LastName  string `json:"lastName" binding:"required"`
-	UserName  string `json:"userName" binding:"required"`
-	Age       int    `json:"age" binding:"required"`
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=8"`
-}
-
 func CreateUserHandler(g *gin.Context) {
-	var req CreateUserRequest
+	var req DTO.CreateUserRequest
 	if err := g.ShouldBindJSON(&req); err != nil {
 		g.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -44,29 +37,37 @@ func CreateUserHandler(g *gin.Context) {
 		return
 	}
 
-	g.JSON(201, gin.H{"message": "User created successfully", "userId": user.UserID})
-}
+	channel := models.Channel{
+		Name:        req.ChannelName,
+		Description: req.ChannelDescription,
+		UserID:      user.UserID,
+	}
 
-type GetUserResponse struct {
-	UserID   int64  `json:"userId"`
-	Email    string `json:"email"`
-	UserName string `json:"userName"`
-	Age      int    `json:"age"`
+	config.DB.Model(&user).Association("Channel").Append(&channel)
+
+	g.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "userId": user.UserID})
 }
 
 func GetUserHandler(g *gin.Context) {
 	userId := g.Param("userId")
 	var user models.User
 	if err := config.DB.First(&user, userId).Error; err != nil {
-		g.JSON(404, gin.H{"error": "User not found"})
+		g.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	g.JSON(200, GetUserResponse{
-		UserID:   user.UserID,
-		Email:    user.Email,
-		UserName: user.UserName,
-		Age:      user.Age,
+	var channel models.Channel
+	if err := config.DB.Where("user_id = ?", user.UserID).First(&channel).Error; err != nil {
+		g.JSON(http.StatusNotFound, gin.H{"error": "Channel not found"})
+		return
+	}
+
+	g.JSON(http.StatusOK, DTO.GetUserResponse{
+		UserID:    user.UserID,
+		Email:     user.Email,
+		UserName:  user.UserName,
+		Age:       user.Age,
+		ChannelID: channel.ChannelID,
 	})
 }
 
@@ -82,17 +83,9 @@ func DeleteUserHandler(g *gin.Context) {
 	g.JSON(200, gin.H{"message": "User deleted successfully"})
 }
 
-type UpdateUserRequest struct {
-	FirstName *string `json:"firstName,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
-	UserName  *string `json:"userName,omitempty"`
-	Age       *int    `json:"age,omitempty"`
-	Email     *string `json:"email,omitempty"`
-}
-
 func UpdateUserHandler(g *gin.Context) {
 	userId := g.Param("userId")
-	var req UpdateUserRequest
+	var req DTO.UpdateUserRequest
 	if err := g.ShouldBindJSON(&req); err != nil {
 		g.JSON(400, gin.H{"error": err.Error()})
 		return
