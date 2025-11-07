@@ -8,6 +8,7 @@ import (
 type UploadVideoRequest struct {
 	Name        string `form:"name" binding:"required"`
 	Description string `form:"description" binding:"required"`
+	ChannelID   *int64 `form:"channelId" binding:"required"`
 }
 
 type GetVideoResponse struct {

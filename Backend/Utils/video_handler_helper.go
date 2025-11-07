@@ -47,6 +47,7 @@ func HandleVideoProcessing(tempPath string, videoDetails DTO.UploadVideoRequest)
 		URL:         uploadPath,
 		Thumbnail:   thumbnailPath,
 		Uploaded:    time.Now(),
+		ChannelID:   videoDetails.ChannelID,
 	}).Error; err != nil {
 		return fmt.Errorf("error saving video to database: %v", err)
 	}
