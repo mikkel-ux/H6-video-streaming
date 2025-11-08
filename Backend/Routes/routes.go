@@ -5,6 +5,7 @@ import (
 	mi "VideoStreamingBackend/Middleware"
 
 	scalargo "github.com/bdpiprava/scalar-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,13 @@ func SetupRoutes(r *gin.Engine) {
 	r.GET("/api.yaml", func(c *gin.Context) {
 		c.File("./ApiDoc/api.yaml")
 	})
+
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	r.GET("/docs", func(c *gin.Context) {
 		html, err := scalargo.NewV2(

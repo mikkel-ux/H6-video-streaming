@@ -55,7 +55,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", tokenString, 3600*24, "/", "localhost", false, true)
+	c.SetCookie("token", tokenString, 3600*24, "/", "", false, true)
 
 	c.JSON(200, gin.H{"token": tokenString, "user": user.UserName, "refreshToken": refreshTokenString})
 }
