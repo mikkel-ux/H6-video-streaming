@@ -13,13 +13,14 @@ import (
 func CreateUserHandler(g *gin.Context) {
 	var req DTO.CreateUserRequest
 	if err := g.ShouldBindJSON(&req); err != nil {
-		g.JSON(400, gin.H{"error": err.Error()})
+		println("Binding error:", err.Error())
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	hashedPassword, err := utils.HasshPassword(req.Password)
 	if err != nil {
-		g.JSON(500, gin.H{"error": "Failed to hash password"})
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
 	user := models.User{
@@ -31,9 +32,16 @@ func CreateUserHandler(g *gin.Context) {
 		Password:  hashedPassword,
 	}
 
+	var count int64
+	config.DB.Model(&models.User{}).Where("email = ?", req.Email).Count(&count)
+	if count > 0 {
+		g.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+		return
+	}
+
 	result := config.DB.Create(&user)
 	if result.Error != nil {
-		g.JSON(500, gin.H{"error": result.Error.Error()})
+		g.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
 
