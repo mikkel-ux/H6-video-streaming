@@ -19,6 +19,7 @@ func SetupRoutes(r *gin.Engine) {
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
+		ExposeHeaders:    []string{"set-cookie"},
 	}))
 
 	r.GET("/docs", func(c *gin.Context) {
