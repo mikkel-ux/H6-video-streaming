@@ -27,6 +27,11 @@ type UpdateUserRequest struct {
 	Email     *string `json:"email,omitempty"`
 }
 
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"oldPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=8"`
+}
+
 type UserSummary struct {
 	UserID   int64  `json:"userId"`
 	UserName string `json:"userName"`

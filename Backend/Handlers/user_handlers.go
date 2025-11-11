@@ -131,11 +131,8 @@ func UpdateUserHandler(g *gin.Context) {
 
 func UpdatePasswordHandler(g *gin.Context) {
 	userId := g.Param("userId")
-	type UpdatePasswordRequest struct {
-		OldPassword string `json:"oldPassword" binding:"required"`
-		NewPassword string `json:"newPassword" binding:"required,min=8"`
-	}
-	var req UpdatePasswordRequest
+
+	var req DTO.UpdatePasswordRequest
 	if err := g.ShouldBindJSON(&req); err != nil {
 		g.JSON(400, gin.H{"error": err.Error()})
 		return
