@@ -36,7 +36,6 @@ export const actions: Actions = {
 		}
 
 		const data = await res.json();
-		console.log(data);
 
 		cookies.set('token', data.token, {
 			path: '/',

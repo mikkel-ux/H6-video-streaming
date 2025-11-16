@@ -227,7 +227,6 @@ func VideoStreamHandler(c *gin.Context) {
 	http.ServeFile(c.Writer, c.Request, video.URL)
 }
 
-
 func Get30RandomVideosHandler(c *gin.Context) {
 	var videos []models.Video
 	if err := config.DB.Order("NEWID()").Limit(30).Find(&videos).Error; err != nil {
@@ -245,4 +244,8 @@ func Get30RandomVideosHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, videoPreviews)
+}
+
+func GetThumbnailHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "GetThumbnailHandler reached"})
 }

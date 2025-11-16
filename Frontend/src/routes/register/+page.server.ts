@@ -26,7 +26,6 @@ export const actions: Actions = {
 		if (!email || !password || !userName || !age || !channelName || !channelDescription) {
 			return fail(400, { email, missing: true });
 		}
-		console.log(channelDescription);
 
 		const res = await fetch('http://localhost:8080/api/users', {
 			method: 'POST',
@@ -53,10 +52,6 @@ export const actions: Actions = {
 
 			return fail(500, { email, serverError: true });
 		}
-
-		const data = await res.json();
-		console.log(data);
-
 		throw redirect(302, '/login');
 	}
 };
