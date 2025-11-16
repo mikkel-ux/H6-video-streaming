@@ -37,14 +37,16 @@ export const actions: Actions = {
 
 		const data = await res.json();
 
+		const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
+
 		cookies.set('token', data.token, {
 			path: '/',
-			maxAge: 30 * 60 // 30 minutes
+			maxAge: SEVEN_DAYS_IN_SECONDS // 7 days
 		});
 
 		cookies.set('refresh_token', data.refreshToken, {
 			path: '/',
-			maxAge: 30 * 60 * 24 * 7 // 7 days
+			maxAge: SEVEN_DAYS_IN_SECONDS // 7 days
 		});
 
 		throw redirect(302, '/home');

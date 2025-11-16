@@ -43,7 +43,6 @@ func RefreshAccessToken(refreshTokenString string) (string, error) {
 
 }
 
-/* TODO: test if we can get refresh token from cookie */
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

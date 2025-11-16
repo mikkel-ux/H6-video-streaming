@@ -14,9 +14,10 @@ var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 func CreateToken(userID int64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		/* "exp":     time.Now().Add(time.Minute * 30).Unix(), */
 		jwt.MapClaims{
 			"user_id": userID,
-			"exp":     time.Now().Add(time.Minute * 30).Unix(),
+			"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(), // kan ikke få mit middleware til at acceptere cookies fra frontend, så sætter exp til 7 dage for at undgå at den udløber
 		},
 	)
 	tokenString, err := token.SignedString(secretKey)
