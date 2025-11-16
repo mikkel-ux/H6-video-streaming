@@ -380,6 +380,40 @@ paths:
           description: Video or user not found
         "500":
           description: Failed to update dislike or link to user
+  /api/videos/random30:
+    get:
+      summary: Get 30 random video previews
+      description: Returns an array of 30 random video previews with ID, title, and thumbnail.
+      responses:
+        "200":
+          description: Successfully retrieved random video previews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    videoId:
+                      type: string
+                      description: Unique identifier of the video
+                    title:
+                      type: string
+                      description: Title of the video
+                    thumbnail:
+                      type: string
+                      format: uri
+                      description: URL of the video thumbnail
+        "500":
+          description: Failed to retrieve videos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to retrieve videos"
 
   /api/channels/{channelId}:
     get:
