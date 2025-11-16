@@ -226,3 +226,23 @@ func VideoStreamHandler(c *gin.Context) {
 
 	http.ServeFile(c.Writer, c.Request, video.URL)
 }
+
+
+func Get30RandomVideosHandler(c *gin.Context) {
+	var videos []models.Video
+	if err := config.DB.Order("NEWID()").Limit(30).Find(&videos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve videos"})
+		return
+	}
+
+	var videoPreviews []DTO.VideoPreview
+	for _, video := range videos {
+		videoPreviews = append(videoPreviews, DTO.VideoPreview{
+			VideoID:   video.VideoID,
+			Title:     video.Title,
+			Thumbnail: video.Thumbnail,
+		})
+	}
+
+	c.JSON(http.StatusOK, videoPreviews)
+}
