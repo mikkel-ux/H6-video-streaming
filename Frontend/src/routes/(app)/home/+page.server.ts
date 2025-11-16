@@ -10,6 +10,11 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				Authorization: `Bearer ${token}`
 			}
 		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch videos: ${response.statusText}`);
+		}
+
 		const data = await response.json();
 		return { videos: data };
 	} catch (error) {

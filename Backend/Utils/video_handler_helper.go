@@ -7,25 +7,29 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
 
+func sanitizeFileName(name string) string {
+	name = strings.ToLower(name)
+	name = strings.ReplaceAll(name, " ", "_")
+	req := regexp.MustCompile(`[^a-z0-9_\-\.]`)
+	name = req.ReplaceAllString(name, "")
+	return name
+}
+
 // TODO implement video processing (e.g., change metadata so it's suitable for streaming, thumbnail generation)
 func HandleVideoProcessing(tempPath string, videoDetails DTO.UploadVideoRequest) error {
-	println("Processing video:", tempPath)
-	thumbnailPath := strings.Replace(tempPath, "TempVideoPath", "Images", 1)
-	uploadPath := strings.Replace(tempPath, "TempVideoPath", "Videos", 1)
+	base := filepath.Base(tempPath)
+	clean := sanitizeFileName(base)
+	thumbnailPath := strings.TrimSuffix(clean, filepath.Ext(clean)) + "___thumbnail.jpg"
+	uploadPath := clean
 
-	lastDot := strings.LastIndex(thumbnailPath, ".")
-	if lastDot != -1 {
-		thumbnailPath = thumbnailPath[:lastDot] + "___thumbnail.jpg"
-		println(thumbnailPath)
-	} else {
-		thumbnailPath = thumbnailPath + "___thumbnail.jpg"
-	}
 	/* command er fra en på stackExchange men jeg har selv sat den op så go kan køre den */
-	cmd := exec.Command("ffmpeg", "-i", tempPath, "-vf", "scale=iw*sar:ih,setsar=1", "-vframes", "1", thumbnailPath)
+	cmd := exec.Command("ffmpeg", "-i", tempPath, "-vf", "scale=iw*sar:ih,setsar=1", "-vframes", "1", filepath.Join("./Uploads/Images/", thumbnailPath))
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println("Error processing video:", err)
@@ -34,7 +38,7 @@ func HandleVideoProcessing(tempPath string, videoDetails DTO.UploadVideoRequest)
 
 	cmd = exec.Command("ffmpeg", "-i", tempPath,
 		"-c:v", "copy", "-c:a", "copy", "-movflags", "+faststart",
-		uploadPath)
+		filepath.Join("./Uploads/Videos/", uploadPath))
 	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error moving file to uploads: %v", err)

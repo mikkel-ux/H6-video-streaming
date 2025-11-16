@@ -34,6 +34,7 @@ func SetupRoutes(r *gin.Engine) {
 	})
 
 	api := r.Group("/api")
+	api.Static("images", "./Uploads/Images")
 
 	api.POST("/users", handlers.CreateUserHandler)
 	api.POST("/login", handlers.LoginHandler)

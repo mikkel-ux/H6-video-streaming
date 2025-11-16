@@ -8,6 +8,7 @@ import (
 	models "VideoStreamingBackend/Models"
 	"fmt"
 	"net/http"
+	"strings"
 
 	DTO "VideoStreamingBackend/Models/DTO"
 	utils "VideoStreamingBackend/Utils"
@@ -63,6 +64,7 @@ func UploadVideoHandler(c *gin.Context) {
 	videoDir := "./Uploads/TempVideoPath/"
 
 	filename := fmt.Sprintf("%s%s___%s", videoDir, userIDStr, file.Filename)
+	filename = strings.ReplaceAll(filename, " ", "_")
 	println("fileName: ", filename)
 
 	if err := c.SaveUploadedFile(file, filename); err != nil {
