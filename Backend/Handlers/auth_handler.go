@@ -67,8 +67,8 @@ func LogoutHandler(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "Failed to revoke refresh token", "details": result.Error()})
 		return
 	}
-	c.SetCookie("Authorization", "", -1, "/", "localhost", false, true)
-	c.SetCookie("token", "", -1, "/", "localhost", false, true)
+	/* c.SetCookie("Authorization", "", -1, "/", "localhost", false, true)
+	c.SetCookie("token", "", -1, "/", "localhost", false, true) */
 	c.JSON(200, gin.H{"message": "Logged out successfully"})
 }
 
@@ -78,7 +78,7 @@ func revokeRefreshToken(tokenString string) error {
 
 	result := config.DB.Model(&models.RefreshToken{}).
 		Where("token = ?", tokenString).
-		Update("revoked", true).
+		Update("revoked", 1).
 		Update("revoked_at", now)
 
 	if result.Error != nil {
