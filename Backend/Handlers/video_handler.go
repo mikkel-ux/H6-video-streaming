@@ -198,11 +198,19 @@ func DislikedVideosHandler(c *gin.Context) {
 
 func GetVideoHandler(c *gin.Context) {
 	videoID := c.Param("videoId")
+	userID, _ := c.Get("userID")
 	var video models.Video
-	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+	if err := config.DB.Preload("Channel").First(&video, "video_id = ?", videoID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 		return
 	}
+
+	var count int64
+	config.DB.Table("user_liked_videos").Where("user_user_id = ? AND video_video_id = ?", userID, videoID).Count(&count)
+	isLiked := count > 0
+
+	config.DB.Table("user_disliked_videos").Where("user_user_id = ? AND video_video_id = ?", userID, videoID).Count(&count)
+	isDisliked := count > 0
 
 	videoResponse := DTO.GetVideoResponse{
 		VideoID:     video.VideoID,
@@ -213,9 +221,14 @@ func GetVideoHandler(c *gin.Context) {
 		Thumbnail:   video.Thumbnail,
 		Likes:       video.Likes,
 		Dislikes:    video.Dislikes,
-		Channel:     video.Channel,
-		ChannelID:   video.ChannelID,
+		Channel: &DTO.ChannelSummary{
+			ChannelID: video.Channel.ChannelID,
+			Name:      video.Channel.Name,
+		},
+		IsLiked:    isLiked,
+		IsDisliked: isDisliked,
 	}
+	println("videoResponse: ", videoResponse.Channel.Name)
 
 	c.JSON(http.StatusOK, videoResponse)
 }

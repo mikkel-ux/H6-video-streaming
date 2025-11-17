@@ -21,8 +21,4 @@ export const load = async ({ params, cookies }: { params: { id: string }; cookie
 		console.error('Error fetching video:', error);
 		return { data: null, error: error };
 	}
-
-	/* return {
-		id
-	}; */
 };

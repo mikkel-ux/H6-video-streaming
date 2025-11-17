@@ -1,7 +1,6 @@
 package dto
 
 import (
-	models "VideoStreamingBackend/Models"
 	"time"
 )
 
@@ -20,8 +19,10 @@ type GetVideoResponse struct {
 	Thumbnail   string          `json:"thumbnail"`
 	Likes       int64           `json:"likes"`
 	Dislikes    int64           `json:"dislikes"`
-	Channel     *models.Channel `json:"channel"`
+	Channel     *ChannelSummary `json:"channel"`
 	ChannelID   *int64          `json:"channelId"`
+	IsLiked     bool            `json:"isLiked"`
+	IsDisliked  bool            `json:"isDisliked"`
 }
 
 type VideoPreview struct {

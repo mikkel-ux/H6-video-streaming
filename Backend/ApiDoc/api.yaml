@@ -313,9 +313,16 @@ paths:
                   dislikes:
                     type: integer
                   channel:
-                    type: string
-                  channelId:
-                    type: integer
+                    type: object
+                    properties:
+                      channelId:
+                        type: string
+                      name:
+                        type: string
+                  isLiked:
+                    type: boolean
+                  isDisliked:
+                    type: boolean
         "404":
           description: Video not found
 

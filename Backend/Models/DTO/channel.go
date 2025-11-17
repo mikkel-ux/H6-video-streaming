@@ -7,3 +7,8 @@ type GetChannelResponse struct {
 	User        UserSummary    `json:"user"`
 	Videos      []VideoPreview `json:"videos"`
 }
+
+type ChannelSummary struct {
+	ChannelID int64  `json:"channelId"`
+	Name      string `json:"name"`
+}
