@@ -61,8 +61,18 @@ func LoginHandler(c *gin.Context) {
 	c.JSON(200, gin.H{"token": tokenString, "user": user.UserName, "refreshToken": refreshTokenString})
 }
 
+/* TODO: opdeter api doc hvis der er tid til det */
 func LogoutHandler(c *gin.Context) {
-	result := revokeRefreshToken(c.GetHeader("Authorization")[7:])
+	/* result := revokeRefreshToken(c.GetHeader("Authorization")[7:]) */
+	type LogoutRequest struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+	var req LogoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid input"})
+		return
+	}
+	result := revokeRefreshToken(req.RefreshToken)
 	if result != nil {
 		c.JSON(500, gin.H{"error": "Failed to revoke refresh token", "details": result.Error()})
 		return
@@ -78,10 +88,11 @@ func revokeRefreshToken(tokenString string) error {
 
 	result := config.DB.Model(&models.RefreshToken{}).
 		Where("token = ?", tokenString).
-		Update("revoked", 1).
+		Update("revoked", false).
 		Update("revoked_at", now)
 
 	if result.Error != nil {
+		println("Error revoking token:", result.Error.Error())
 		return result.Error
 	}
 
