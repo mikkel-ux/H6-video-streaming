@@ -8,6 +8,7 @@ import (
 	models "VideoStreamingBackend/Models"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	DTO "VideoStreamingBackend/Models/DTO"
@@ -213,20 +214,30 @@ func GetVideoHandler(c *gin.Context) {
 		Likes:       video.Likes,
 		Dislikes:    video.Dislikes,
 		Channel:     video.Channel,
+		ChannelID:   video.ChannelID,
 	}
 
 	c.JSON(http.StatusOK, videoResponse)
 }
 
 func VideoStreamHandler(c *gin.Context) {
-	videoID := c.Param("videoId")
-	var video models.Video
-	if err := config.DB.First(&video, "video_id = ?", videoID).Error; err != nil {
+	videoName := c.Param("videoName")
+	fmt.Println("Streaming video from path: ", videoName)
+	filePath := "./Uploads/Videos/" + videoName
+	file, err := os.Open(filePath)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 		return
 	}
+	defer file.Close()
 
-	http.ServeFile(c.Writer, c.Request, video.URL)
+	stat, err := file.Stat()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read file stats"})
+		return
+	}
+
+	http.ServeContent(c.Writer, c.Request, videoName, stat.ModTime(), file)
 }
 
 func Get30RandomVideosHandler(c *gin.Context) {

@@ -21,6 +21,7 @@ type GetVideoResponse struct {
 	Likes       int64           `json:"likes"`
 	Dislikes    int64           `json:"dislikes"`
 	Channel     *models.Channel `json:"channel"`
+	ChannelID   *int64          `json:"channelId"`
 }
 
 type VideoPreview struct {

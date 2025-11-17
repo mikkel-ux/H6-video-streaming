@@ -47,6 +47,7 @@ func SetupRoutes(r *gin.Engine) {
 		protected.DELETE("/users/:userId", handlers.DeleteUserHandler)
 		protected.GET("/users/:userId", handlers.GetUserHandler)
 		protected.POST("/logout", handlers.LogoutHandler)
+		protected.GET("/videos/stream/:videoName", handlers.VideoStreamHandler)
 		protected.POST("/videos", handlers.UploadVideoHandler)
 		protected.GET("/videos/:videoId", handlers.GetVideoHandler)
 		protected.GET("/videos/random30", handlers.Get30RandomVideosHandler)

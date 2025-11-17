@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
     import type { PageData } from './$types';
+	import { on } from 'svelte/events';
 
     type VideoPreview = {
-        id: number;
+        videoId: number;
         title: string;
         thumbnail: string;
     }
@@ -12,6 +13,10 @@
     let { data }: { data: PageData } = $props();
 
     let videos = $state<VideoPreview[]>(data.videos);
+
+    onMount(() => {
+        console.log(videos);
+    });
 </script>
 
 <h1 class="text-3xl font-bold underline">
@@ -23,7 +28,7 @@
         <div class="border rounded-lg overflow-hidden shadow-lg">
             <img src={`http://localhost:8080/api/images/${video.thumbnail}`} alt={video.title} class="w-full h-48 object-cover" />
             <div class="p-4">
-                <h2 class="text-xl font-semibold">{video.title}</h2>
+                <h2 class="text-xl font-semibold"><a href={`/video/${video.videoId}`}>{video.title}</a></h2>
             </div>
         </div>
     {/each}
