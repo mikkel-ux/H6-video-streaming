@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
     import type { PageData } from './$types';
 
@@ -6,17 +7,21 @@
 	if (!data.data) {
 		throw new Error('No video data available');
 	}
+	let urlParams = new URLSearchParams(page.url.search);
+	let startTime = parseInt(urlParams.get('t') || '0', 10);
+
+	let videoEl = $state<HTMLVideoElement | null>(null);
 	let videoLikes = $state<number>(data.data.likes ?? 0);
 	let videoDislikes = $state<number>(data.data.dislikes ?? 0);
 	let videoIsLiked = $state<boolean>(data.data.isLiked ?? false);
 	let videoIsDisliked = $state<boolean>(data.data.isDisliked ?? false);
 
 	onMount(() => {
-		console.log(data.data);
+		setStartTime();
 	});
 
 	async function like() {
-		if (!data.data || data.data.isLiked) {
+		if (!data.data) {
 			return;
 		}
 		try {
@@ -26,8 +31,13 @@
 				body: JSON.stringify({ videoId: data.data.videoId })
 			});
 			if (response.ok) {
-				videoLikes += 1;
-				videoIsLiked = true;
+				if (videoIsLiked) {
+					videoLikes -= 1;
+					videoIsLiked = false;
+				} else{
+					videoLikes += 1;
+					videoIsLiked = true;
+				}
 			} else {
 				console.error('Failed to like the video');
 			}
@@ -37,7 +47,7 @@
 	}
 
 	async function dislike() {
-		if (!data.data || data.data.isDisliked) {
+		if (!data.data) {
 			return;
 		}
 		try {
@@ -47,8 +57,13 @@
 				body: JSON.stringify({ videoId: data.data.videoId })
 			});
 			if (response.ok) {
-				videoDislikes += 1;
-				videoIsDisliked = true;
+				if (videoIsDisliked) {
+					videoDislikes -= 1;
+					videoIsDisliked = false;
+				} else{
+					videoDislikes += 1;
+					videoIsDisliked = true;
+				}
 			} else {
 				console.error('Failed to dislike the video');
 			}
@@ -56,6 +71,13 @@
 			console.error('Error disliking the video:', error);
 		}		
 	}
+
+	function setStartTime() {
+		if (videoEl) {
+			videoEl.currentTime = startTime;
+		}
+	}
+
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
@@ -87,10 +109,12 @@
 
 	<div class="relative rounded-xl overflow-hidden shadow-2xl bg-black mb-6">
 		<video
+			bind:this={videoEl}
 			controls
 			autoplay
 			class="w-full aspect-video"
 			poster={`http://localhost:8080/api/images/${data.data.thumbnail}`}
+			onloadedmetadata={setStartTime}
 		>
 			<source src={`http://localhost:8080/api/videos/stream/${data.data.url}`} type="video/mp4" />
 			<track
