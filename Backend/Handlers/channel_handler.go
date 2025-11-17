@@ -16,6 +16,11 @@ func GetChannelHandler(g *gin.Context) {
 		g.JSON(http.StatusNotFound, gin.H{"error": "Channel not found"})
 		return
 	}
+	isOwner := false
+	userId, exists := g.Get("userID")
+	if exists && userId == channel.UserID {
+		isOwner = true
+	}
 
 	response := DTO.GetChannelResponse{
 		ChannelID:   channel.ChannelID,
@@ -25,6 +30,7 @@ func GetChannelHandler(g *gin.Context) {
 			UserID:   channel.User.UserID,
 			UserName: channel.User.UserName,
 		},
+		IsOwner: isOwner,
 	}
 
 	for _, video := range channel.Videos {

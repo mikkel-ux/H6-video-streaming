@@ -3,6 +3,9 @@
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
+	if (!data.data) {
+		throw new Error('No video data available');
+	}
 	let videolikes = $state<number>(data.data.likes ?? 0);
 	let videodislikes = $state<number>(data.data.dislikes ?? 0);
 	let videoisliked = $state<boolean>(data.data.isLiked ?? false);
@@ -13,7 +16,7 @@
 	});
 
 	async function like() {
-		if (data.data.isLiked) {
+		if (!data.data || data.data.isLiked) {
 			return;
 		}
 		try {
@@ -34,7 +37,7 @@
 	}
 
 	async function dislike() {
-		if (data.data.isDisliked) {
+		if (!data.data || data.data.isDisliked) {
 			return;
 		}
 		try {
@@ -64,7 +67,7 @@
 
             <span class="text-sm text-gray-400">Uploaded by</span>
             <span class="font-medium text-yellow-300 hover:underline cursor-pointer">
-                {data.data.channel?.name || "Unknown"}
+                <a href={`/channel/${data.data.channel?.channelId}`}>{data.data.channel?.name || "Unknown"}</a>
             </span>
             <span class="text-gray-500 text-sm">•</span>
             <span class="text-sm text-gray-400">
@@ -76,8 +79,8 @@
 		    <div class="flex items-center gap-4 mt-6 text-sm text-gray-400">
 			    <!-- <span onclick={like}>👍 {videolikes}</span>
 			    <span onclick={dislike}>👎 {videodislikes}</span> -->
-					<button onclick={like} class="hover:text-white cursor-pointer {data.data.isLiked ? 'text-green-500' : ''}">👍 {videolikes}</button>
-					<button onclick={dislike} class="hover:text-white cursor-pointer {data.data.isDisliked ? 'text-red-500' : ''}">👎 {videodislikes}</button>
+					<button onclick={like} class="hover:text-white cursor-pointer {videoisliked ? 'text-green-500' : ''}">👍 {videolikes}</button>
+					<button onclick={dislike} class="hover:text-white cursor-pointer {videoisdisliked ? 'text-red-500' : ''}">👎 {videodislikes}</button>
 		    </div>
 	    {/if}
 	</div>

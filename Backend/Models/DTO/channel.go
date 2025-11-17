@@ -6,6 +6,7 @@ type GetChannelResponse struct {
 	Description string         `json:"description"`
 	User        UserSummary    `json:"user"`
 	Videos      []VideoPreview `json:"videos"`
+	IsOwner     bool           `json:"isOwner"`
 }
 
 type ChannelSummary struct {

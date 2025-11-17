@@ -1,3 +1,23 @@
+/* test */
+type channelSummary = {
+	channelId: string;
+	name: string;
+};
+
+type VideoData = {
+	videoId: string;
+	title: string;
+	description: string;
+	url: string;
+	thumbnail: string;
+	uploaded: string;
+	likes: number;
+	dislikes: number;
+	channel: channelSummary;
+	isLiked: boolean;
+	isDisliked: boolean;
+};
+
 export const load = async ({ params, cookies }: { params: { id: string }; cookies: any }) => {
 	const { id } = params;
 	const token = cookies.get('token');
@@ -15,7 +35,7 @@ export const load = async ({ params, cookies }: { params: { id: string }; cookie
 			throw new Error(`Failed to fetch video: ${response.statusText}`);
 		}
 
-		const data = await response.json();
+		const data: VideoData = await response.json();
 		return { data: data, error: null };
 	} catch (error) {
 		console.error('Error fetching video:', error);
