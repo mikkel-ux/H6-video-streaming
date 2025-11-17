@@ -6,10 +6,10 @@
 	if (!data.data) {
 		throw new Error('No video data available');
 	}
-	let videolikes = $state<number>(data.data.likes ?? 0);
-	let videodislikes = $state<number>(data.data.dislikes ?? 0);
-	let videoisliked = $state<boolean>(data.data.isLiked ?? false);
-	let videoisdisliked = $state<boolean>(data.data.isDisliked ?? false);
+	let videoLikes = $state<number>(data.data.likes ?? 0);
+	let videoDislikes = $state<number>(data.data.dislikes ?? 0);
+	let videoIsLiked = $state<boolean>(data.data.isLiked ?? false);
+	let videoIsDisliked = $state<boolean>(data.data.isDisliked ?? false);
 
 	onMount(() => {
 		console.log(data.data);
@@ -26,8 +26,8 @@
 				body: JSON.stringify({ videoId: data.data.videoId })
 			});
 			if (response.ok) {
-				videolikes += 1;
-				videoisliked = true;
+				videoLikes += 1;
+				videoIsLiked = true;
 			} else {
 				console.error('Failed to like the video');
 			}
@@ -47,8 +47,8 @@
 				body: JSON.stringify({ videoId: data.data.videoId })
 			});
 			if (response.ok) {
-				videodislikes += 1;
-				videoisdisliked = true;
+				videoDislikes += 1;
+				videoIsDisliked = true;
 			} else {
 				console.error('Failed to dislike the video');
 			}
@@ -79,8 +79,8 @@
 		    <div class="flex items-center gap-4 mt-6 text-sm text-gray-400">
 			    <!-- <span onclick={like}>👍 {videolikes}</span>
 			    <span onclick={dislike}>👎 {videodislikes}</span> -->
-					<button onclick={like} class="hover:text-white cursor-pointer {videoisliked ? 'text-green-500' : ''}">👍 {videolikes}</button>
-					<button onclick={dislike} class="hover:text-white cursor-pointer {videoisdisliked ? 'text-red-500' : ''}">👎 {videodislikes}</button>
+					<button onclick={like} class="hover:text-white cursor-pointer {videoIsLiked ? 'text-green-500' : ''}">👍 {videoLikes}</button>
+					<button onclick={dislike} class="hover:text-white cursor-pointer {videoIsDisliked ? 'text-red-500' : ''}">👎 {videoDislikes}</button>
 		    </div>
 	    {/if}
 	</div>
