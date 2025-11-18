@@ -17,7 +17,7 @@
 	let videoIsDisliked = $state<boolean>(data.data.isDisliked ?? false);
 
 	onMount(() => {
-		setStartTime();
+		setStartTime();		
 	});
 
 	async function like() {
@@ -93,7 +93,11 @@
             </span>
             <span class="text-gray-500 text-sm">•</span>
             <span class="text-sm text-gray-400">
-                {new Date(data.data.uploaded).toLocaleDateString()}
+                {new Date(data.data.uploaded).toLocaleDateString("en-DK", {
+					day: "numeric",
+					month: "numeric",
+					year: "numeric"
+				})}
             </span>
         </div>
 
