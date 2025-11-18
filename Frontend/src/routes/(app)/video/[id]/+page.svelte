@@ -119,15 +119,8 @@
 			class="w-full aspect-video"
 			poster={`http://localhost:8080/api/images/${data.data.thumbnail}`}
 			onloadedmetadata={setStartTime}
-		>
+			aria-hidden="true">
 			<source src={`http://localhost:8080/api/videos/stream/${data.data.url}`} type="video/mp4" />
-			<track
-				kind="captions"
-				label="English Captions"
-				srcLang="en"
-				src={`http://localhost:8080/api/videos/stream/${data.data.url}.vtt`}
-				default
-			/>
 			Your browser does not support the video tag.
 		</video>
 	</div>
