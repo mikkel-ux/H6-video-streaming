@@ -48,6 +48,12 @@ export const actions: Actions = {
 			path: '/',
 			maxAge: SEVEN_DAYS_IN_SECONDS // 7 days
 		});
+		console.log(data);
+
+		cookies.set('user_id', data.userId, {
+			path: '/',
+			maxAge: SEVEN_DAYS_IN_SECONDS // 7 days
+		});
 
 		throw redirect(302, '/home');
 	}
