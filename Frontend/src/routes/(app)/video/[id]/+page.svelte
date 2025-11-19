@@ -17,7 +17,7 @@
 	let videoIsDisliked = $state<boolean>(data.data.isDisliked ?? false);
 
 	onMount(() => {
-		setStartTime();
+		setStartTime();		
 	});
 
 	async function like() {
@@ -93,7 +93,11 @@
             </span>
             <span class="text-gray-500 text-sm">•</span>
             <span class="text-sm text-gray-400">
-                {new Date(data.data.uploaded).toLocaleDateString()}
+                {new Date(data.data.uploaded).toLocaleDateString("en-DK", {
+					day: "numeric",
+					month: "numeric",
+					year: "numeric"
+				})}
             </span>
         </div>
 
@@ -115,15 +119,8 @@
 			class="w-full aspect-video"
 			poster={`http://localhost:8080/api/images/${data.data.thumbnail}`}
 			onloadedmetadata={setStartTime}
-		>
+			aria-hidden="true">
 			<source src={`http://localhost:8080/api/videos/stream/${data.data.url}`} type="video/mp4" />
-			<track
-				kind="captions"
-				label="English Captions"
-				srcLang="en"
-				src={`http://localhost:8080/api/videos/stream/${data.data.url}.vtt`}
-				default
-			/>
 			Your browser does not support the video tag.
 		</video>
 	</div>
